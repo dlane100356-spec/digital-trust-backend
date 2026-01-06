@@ -1,49 +1,53 @@
 import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
 import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 /* =========================
    MIDDLEWARE
 ========================= */
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 /* =========================
-   DATABASE CONNECTION
+   ROOT ROUTE
 ========================= */
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/digital_trust";
+app.get("/", (req, res) => {
+  res.send("Backend is live and connected");
+});
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log("✅ MongoDB connected successfully");
-  })
-  .catch((error) => {
-    console.error("❌ MongoDB connection failed:", error.message);
-  });
+/* =========================
+   HEALTH CHECK
+========================= */
+app.get("/health", (req, res) => {
+  res.json({ status: "OK" });
+});
 
 /* =========================
    ROUTES
 ========================= */
-app.get("/", (req, res) => {
-  res.send("✅ Digital Trust Backend is running 🚀");
-});
-
-app.get("/api/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "Backend + Database connection successful",
-  });
-});
+app.use("/api/auth", authRoutes);
 
 /* =========================
-   START SERVER
+   DATABASE CONNECTION
 ========================= */
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected successfully"))
+  .catch((err) =>
+    console.error("❌ MongoDB connection failed:", err.message)
+  );
+
+/* =========================
+   SERVER START
+========================= */
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`✅ Backend running on port ${PORT}`);
 });
