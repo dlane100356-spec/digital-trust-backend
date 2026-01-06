@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "857038862176",
+    "project_id": "digital-trust-app",
+    "storage_bucket": "digital-trust-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857038862176:android:fc50f1293f069f65add005",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClrRxiF0IGNr8IvGU0f6Q34GaMVlSoDew"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
