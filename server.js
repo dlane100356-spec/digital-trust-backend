@@ -2,49 +2,57 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
 /* =========================
-   MIDDLEWARE
+   MIDDLEWARE (MUST BE FIRST)
 ========================= */
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // 🚨 REQUIRED
 
 /* =========================
-   ROOT ROUTE
+   TEST ROUTE
 ========================= */
 app.get("/", (req, res) => {
-  res.send("Backend is live and connected");
+  res.send("Backend is live");
 });
 
 /* =========================
-   HEALTH CHECK
+   AUTH ROUTES
 ========================= */
-app.get("/health", (req, res) => {
-  res.json({ status: "OK" });
-});
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-/* =========================
-   ROUTES
-========================= */
-app.use("/api/auth", authRoutes);
+    // 🔍 DEBUG LOG (IMPORTANT)
+    console.log("BODY RECEIVED:", req.body);
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: { name, email }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 /* =========================
    DATABASE CONNECTION
 ========================= */
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected successfully"))
-  .catch((err) =>
-    console.error("❌ MongoDB connection failed:", err.message)
-  );
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB error:", err.message));
 
 /* =========================
-   SERVER START
+   START SERVER
 ========================= */
 const PORT = process.env.PORT || 5000;
 
