@@ -2,57 +2,56 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
 /* =========================
-   MIDDLEWARE (MUST BE FIRST)
+   MIDDLEWARE
 ========================= */
 app.use(cors());
-app.use(express.json()); // 🚨 REQUIRED
+app.use(express.json());
 
 /* =========================
-   TEST ROUTE
+   ROOT ROUTE
 ========================= */
 app.get("/", (req, res) => {
-  res.send("Backend is live");
+  res.send("Backend is live and connected");
+});
+
+/* =========================
+   HEALTH CHECK
+========================= */
+app.get("/health", (req, res) => {
+  res.json({
+    status: "OK",
+    uptime: process.uptime(),
+  });
 });
 
 /* =========================
    AUTH ROUTES
 ========================= */
-app.post("/api/auth/register", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    // 🔍 DEBUG LOG (IMPORTANT)
-    console.log("BODY RECEIVED:", req.body);
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Missing fields" });
-    }
-
-    res.status(201).json({
-      message: "User registered successfully",
-      user: { name, email }
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+app.use("/api/auth", authRoutes);
 
 /* =========================
    DATABASE CONNECTION
 ========================= */
+const MONGO_URI = process.env.MONGO_URI;
+
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB error:", err.message));
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB connected successfully");
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err.message);
+  });
 
 /* =========================
-   START SERVER
+   SERVER START
 ========================= */
 const PORT = process.env.PORT || 5000;
 
