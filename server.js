@@ -4,17 +4,12 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
-const healthRoutes = require("./routes/health");
 
 const app = express();
 
 /* Middleware */
 app.use(cors());
 app.use(express.json());
-
-/* Routes */
-app.use("/api/auth", authRoutes);
-app.use("/api/health", healthRoutes);
 
 /* Root route */
 app.get("/", (req, res) => {
@@ -24,7 +19,27 @@ app.get("/", (req, res) => {
   });
 });
 
-/* MongoDB connection */
+/* Health route — DEFINE DIRECTLY */
+app.get("/api/health", (req, res) => {
+  const state = mongoose.connection.readyState;
+
+  res.json({
+    status: "healthy",
+    service: "Digital Trust Backend",
+    database:
+      state === 1
+        ? "connected"
+        : state === 2
+        ? "connecting"
+        : "disconnected",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/* Auth routes */
+app.use("/api/auth", authRoutes);
+
+/* MongoDB */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
