@@ -1,11 +1,20 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const admin = require("firebase-admin");
-const protect = require("../middleware/authMiddleware");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
-router.post("/firebase", async (req, res) => {
+/* Ping route */
+router.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    route: "/api/auth",
+    message: "Auth service is running",
+  });
+});
+
+/* Verify Firebase token and issue JWT */
+router.post("/", async (req, res) => {
   const { idToken } = req.body;
 
   if (!idToken) {
@@ -25,13 +34,9 @@ router.post("/firebase", async (req, res) => {
     });
 
     res.json({ token, user: payload });
-  } catch (error) {
+  } catch (err) {
     res.status(401).json({ message: "Invalid Firebase token" });
   }
-});
-
-router.get("/me", protect, (req, res) => {
-  res.json({ message: "Secure data access granted", user: req.user });
 });
 
 module.exports = router;
