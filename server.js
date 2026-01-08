@@ -1,27 +1,34 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 
 const connectDB = require("./config/db");
-require("./config/firebase");
-
-const authRoutes = require("./routes/auth");
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-app.get("/health", (req, res) => {
-  res.json({ status: "OK", message: "Backend is live 🚀" });
+// Connect MongoDB
+connectDB();
+
+// ✅ ROOT ROUTE
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "Digital Trust Backend running 🚀",
+  });
 });
 
-app.use("/api/auth", authRoutes);
+// ✅ HEALTH ROUTE
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ ok: true });
+});
 
+// Port
 const PORT = process.env.PORT || 5000;
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
