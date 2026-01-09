@@ -1,50 +1,34 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-const admin = require("firebase-admin");
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
 
-const authRoutes = require("./routes/auth");
+// LOAD ENV VARIABLES
+dotenv.config();
 
+// CREATE APP
 const app = express();
 
-/* Middleware */
+// GLOBAL MIDDLEWARE
 app.use(cors());
 app.use(express.json());
 
-/* Firebase Admin */
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(
-      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    ),
-  });
-}
+// ===== ROUTE IMPORTS =====
+import protectedRoutes from "./src/routes/api/protected.js";
 
-/* MongoDB */
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB error:", err));
-
-/* Root */
+// ===== HEALTH CHECK =====
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     status: "OK",
     service: "Digital Trust Backend",
   });
 });
 
-/* Health */
-app.get("/api/health", (req, res) => {
-  res.json({ ok: true });
-});
+// ===== API ROUTES =====
+app.use("/api/protected", protectedRoutes);
 
-/* Auth routes */
-app.use("/api/auth", authRoutes);
-
-/* Start server */
+// ===== START SERVER =====
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

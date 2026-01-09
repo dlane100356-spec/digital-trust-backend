@@ -1,19 +1,35 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
-module.exports = function (req, res, next) {
+export default function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Missing or invalid token" });
+  if (!authHeader) {
+    return res.status(401).json({
+      message: "No token provided",
+    });
   }
 
-  const token = authHeader.split(" ")[1];
+  // Expected format: "Bearer <token>"
+  const parts = authHeader.split(" ");
+
+  if (parts.length !== 2 || parts[0] !== "Bearer") {
+    return res.status(401).json({
+      message: "Malformed authorization header",
+    });
+  }
+
+  const token = parts[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // attach decoded user to request
     req.user = decoded;
+
     next();
-  } catch (err) {
-    return res.status(401).json({ message: "Token verification failed" });
+  } catch (error) {
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
   }
-};
+}
