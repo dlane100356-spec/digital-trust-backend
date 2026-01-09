@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
-/* Ping route */
+/* Health / ping route */
 router.get("/", (req, res) => {
   res.json({
     status: "OK",

@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
 
-const protect = (req, res, next) => {
+module.exports = function (req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
+    return res.status(401).json({ message: "Missing or invalid token" });
   }
 
   const token = authHeader.split(" ")[1];
@@ -14,8 +14,6 @@ const protect = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Token verification failed" });
   }
 };
-
-module.exports = protect;

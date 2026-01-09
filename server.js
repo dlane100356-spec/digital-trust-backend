@@ -1,7 +1,8 @@
 require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const admin = require("firebase-admin");
 
 const authRoutes = require("./routes/auth");
 
@@ -11,7 +12,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* Root route */
+/* Firebase Admin */
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    ),
+  });
+}
+
+/* MongoDB */
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB error:", err));
+
+/* Root */
 app.get("/", (req, res) => {
   res.json({
     status: "OK",
@@ -19,33 +35,13 @@ app.get("/", (req, res) => {
   });
 });
 
-/* Health route — DEFINE DIRECTLY */
+/* Health */
 app.get("/api/health", (req, res) => {
-  const state = mongoose.connection.readyState;
-
-  res.json({
-    status: "healthy",
-    service: "Digital Trust Backend",
-    database:
-      state === 1
-        ? "connected"
-        : state === 2
-        ? "connecting"
-        : "disconnected",
-    timestamp: new Date().toISOString(),
-  });
+  res.json({ ok: true });
 });
 
 /* Auth routes */
 app.use("/api/auth", authRoutes);
-
-/* MongoDB */
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) =>
-    console.error("MongoDB connection failed:", err.message)
-  );
 
 /* Start server */
 const PORT = process.env.PORT || 5000;
